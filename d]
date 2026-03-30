@@ -1,0 +1,10 @@
+user.name=Srinath2934
+user.email=sirnath2934@gmail.com
+user.mail=:srinath2934@gamil.com
+http.postbuffer=524288000
+credential.usehttppath=true
+credential.guiprompt=false
+filter.lfs.clean=git-lfs clean -- %f
+filter.lfs.smudge=git-lfs smudge -- %f
+filter.lfs.process=git-lfs filter-process
+filter.lfs.required=true
