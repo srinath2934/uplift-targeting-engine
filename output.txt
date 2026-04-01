@@ -1,0 +1,21 @@
+Uplift-Based Conversion Optimization SystemProject Architecture & Implementation Guide
+1. Project Objective
+Build a machine learning system that identifies which users should receive marketing messages to maximize conversion using uplift modeling.
+2. Core Problem
+Instead of predicting whether a user will convert, this system predicts the impact of sending a message.Goal:Identify users whose conversion probability increases due to intervention.
+3. System Architecture
+User Data (features f0–f11)→ Data Processing→ Uplift Model (Treatment vs Control)→ Uplift Score Calculation→ Decision Engine→ Action (Send / Do Not Send)→ Evaluation Metrics
+4. Data Layer
+Dataset includes:- Features (f0–f11)- Treatment (0/1)- Conversion (0/1)This enables real-world A/B testing simulation.
+5. Data Processing
+- Handle missing values- Normalize features- Split dataset into training and testingOutput:X (features), y (conversion), t (treatment)
+6. Uplift Modeling
+Train two models:- Model_T: trained on treatment group- Model_C: trained on control groupUplift = P(convert|treatment) - P(convert|control)
+7. Decision Engine
+If uplift > 0 → Send messageElse → Do not sendThis ensures optimal targeting.
+8. Evaluation
+Measure:- Conversion rate- Uplift score- Business impact (increase in conversions)Compare targeted vs non-targeted groups.
+9. Project Structure
+AI_Conversion_Project/├── data/├── notebooks/├── models/├── experiments/├── api/├── utils/├── main.py├── requirements.txt└── README.md
+10. Resume Impact Statement
+Built an uplift modeling system to optimize customer targeting, predicting treatment effects and improving conversion using data-driven decision strategies.

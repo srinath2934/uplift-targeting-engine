@@ -47,3 +47,4 @@ data/*.parquet
 # macOS / Windows generated files
 .DS_Store
 Thumbs.db
+Uplift_Project_Architecture.docx
