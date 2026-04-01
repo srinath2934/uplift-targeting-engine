@@ -1,41 +1,86 @@
-# AI Conversion Project: Uplift Modeling
+# 🚀 Uplift Targeting Engine: Maximizing Ad ROI with Causal AI
 
-## 1. The Core Objective
-We are building a machine learning system to maximize conversion rates using **Uplift Modeling** (specifically a **Two-Model Approach** or "T-Learner"). Instead of predicting *if* a user will convert, we are predicting the **incremental impact** of sending them a marketing message or showing an ad.
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![XGBoost](https://img.shields.io/badge/Model-XGBoost-orange.svg)](https://xgboost.readthedocs.io/)
+[![Dataset: Criteo](https://img.shields.io/badge/Dataset-Criteo_13M-green.svg)](https://ailab.criteo.com/criteo-uplift-dataset/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Our goal is to find the **"Persuadables"**—users whose probability of converting will significantly increase *only if* they receive the intervention.
+## 📌 Executive Summary
+Traditional marketing systems target users who are *likely to buy*. This is inefficient because it wastes money on users who would have bought anyway (**"Sure Things"**).
 
-## 2. The Problem We Are Solving
-Traditional machine learning asks: *"Will this user buy?"* 
-This leads to targeting people who were already going to buy anyway (wasting marketing budget) or annoying people who might leave because of the ad.
+This project implements a **Causal Uplift Model** (T-Learner) using 13.9 million rows of real-world randomized control trial (RCT) data. It predicts the **incremental impact** of an ad, allowing businesses to target only the **"Persuadables"**—users who convert *only because* of the intervention.
 
-We are solving the problem of **optimizing marketing efficiency**. By shifting the question to *"Did our ad CAUSE them to buy?"*, we segment users into four buckets:
-1. **The Persuadables:** Will *only* buy if we show them the ad. **(TARGET)**
-2. **The Sure Things:** Will buy whether they see the ad or not. *(Do Not Target - Save money)*
-3. **The Lost Causes:** Will never buy, regardless of the ad. *(Do Not Target - Save money)*
-4. **The Sleeping Dogs:** Were going to buy, but an ad will annoy them into leaving. *(Avoid!)*
+### 💰 Business ROI Decision Matrix
+| Segment | Conversion if Treated | Conversion if Control | Recommended Action |
+| :--- | :--- | :--- | :--- |
+| **Persuadables** | High | Low | **Target** 🎯 |
+| **Sure Things** | High | High | **Avoid** (Save $) |
+| **Lost Causes** | Low | Low | **Avoid** (Save $) |
+| **Sleeping Dogs** | Low | High | **CRITICAL AVOID** ⚠️ |
 
-## 3. The Dataset
-This project uses the **Criteo Uplift Modeling Dataset** (13 Million rows), generated through a massive Randomized Control Trial (A/B Test). 
+---
 
-* **`f0` - `f11` (Features):** The user's profile (e.g., past clicks, device type).
-* **`treatment`:** 
-  * `1` (Treated): Randomly selected to see the ad (84.6%).
-  * `0` (Control): Randomly selected NOT to see the ad (15.4%).
-* **`conversion` (Target):** Whether they actually bought something (`1`) or not (`0`).
+## 🛠️ Technical Architecture
 
-Because the ad assignment was completely random, we can guarantee that the *only* difference between the two massive groups is whether or not they saw the ad. This allows our machine learning models to prove **causality**.
+```mermaid
+graph TD
+    A[Raw 13.9M Criteo Dataset] --> B{Treatment Group?}
+    B -- Yes (85%) --> C[Train Model_T: XGBoost]
+    B -- No (15%) --> D[Train Model_C: XGBoost]
+    
+    E[New User Request] --> F[Model_T Prediction]
+    E --> G[Model_C Prediction]
+    F -- P(T) --> H[Uplift Calculation]
+    G -- P(C) --> H
+    
+    H -- Uplift > Threshold --> I[Target with Ad]
+    H -- Uplift <= Threshold --> J[Silence (Suppress Ad)]
+```
 
-## 4. System Architecture (How It Works)
+### 🧠 Methodology: The T-Learner
+The system trains two independent gradient-boosted trees (XGBoost):
+1.  **Treatment Model ($M_T$):** Learns behavior under exposure to ads.
+2.  **Control Model ($M_C$):** Learns baseline organic behavior.
 
-### Training Phase (The Two-Model Approach)
-1. **`Model_T` (Treatment Model):** Trained only on users where `treatment = 1`. It learns what a converting user looks like when they **do** see an ad.
-2. **`Model_C` (Control Model):** Trained only on users where `treatment = 0`. It learns what a converting user looks like when they **do not** see an ad.
+**Uplift Score calculation:**
+$$\text{Uplift} = P(\text{Conversion} | \text{Treated}) - P(\text{Conversion} | \text{Control})$$
 
-### Inference Phase (The Decision Engine)
-When a brand new user arrives, the system grabs their 12 features (`f0`-`f11`) and does the following in real-time:
+### 📊 Performance Metrics (Phase 4 Evaluation)
+*   **Dataset Size:** 13,912,825 rows.
+*   **ROC-AUC (Treatment):** **0.9584** (Excellent discrimination).
+*   **Ranking Logic:** Qini Curve analysis confirms significant uplift gain in the top 2 deciles.
 
-1. **Ask `Model_T`:** "If we DO show this person an ad, what is the probability they will buy?" *(e.g., 8%)*
-2. **Ask `Model_C`:** "If we DO NOT show this person an ad, what is their organic probability of buying?" *(e.g., 2%)*
-3. **Calculate Uplift:** `8% - 2% = +6% Uplift`
-4. **Make Decision:** Because the Uplift is greater than 0, the Decision Engine automatically triggers the action: **Send the Ad!**
+---
+
+## 📂 Project Structure
+```text
+├── notebooks/          # EDA and Model Evaluation (Calibration, Qini, ROC)
+├── models/             # Pre-trained XGBoost Models
+├── evaluate_full_model.py # Evaluation pipeline
+├── train_full_model.py   # Training pipeline
+├── requirements.txt    # Project Dependencies
+└── README.md           # This documentation
+```
+
+---
+
+## 🚀 Getting Started
+
+### 1. Prerequisites
+Python 3.9+, pip, and an active virtual environment.
+
+### 2. Quick Install
+```bash
+git clone https://github.com/srinath2934/uplift-targeting-engine.git
+cd uplift-targeting-engine
+pip install -r requirements.txt
+```
+
+---
+
+## 🤝 Acknowledgments
+*   **Criteo AI Lab:** For providing the massive-scale open-source dataset.
+*   **XGBoost Team:** For the industry-standard gradient boosting framework.
+
+---
+**Developed by [Srinath](https://github.com/srinath2934)**
