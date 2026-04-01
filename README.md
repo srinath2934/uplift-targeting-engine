@@ -24,17 +24,39 @@ This project implements a **Causal Uplift Model** (T-Learner) using 13.9 million
 
 ```mermaid
 graph TD
-    A[Raw 13.9M Criteo Dataset] --> B{Treatment Group?}
-    B -- Yes (85%) --> C[Train Model_T: XGBoost]
-    B -- No (15%) --> D[Train Model_C: XGBoost]
+    %% Node Definitions
+    Dataset(["Raw 13.9M Criteo Dataset"]):::data
+    Split{Treatment Group?}:::decision
+    ModelT[Train Model_T: XGBoost]:::model
+    ModelC[Train Model_C: XGBoost]:::model
+    Inference([New User Request]):::request
+    PredT[Model_T Prediction]:::process
+    PredC[Model_C Prediction]:::process
+    Calc[Uplift Calculation]:::process
+    ActionI[Target with Ad]:::target
+    ActionJ[Silence / Suppress Ad]:::avoid
+
+    %% Connection Logic
+    Dataset --> Split
+    Split -- "Yes (85%)" --> ModelT
+    Split -- "No (15%)" --> ModelC
     
-    E[New User Request] --> F[Model_T Prediction]
-    E --> G[Model_C Prediction]
-    F -- P(T) --> H[Uplift Calculation]
-    G -- P(C) --> H
+    Inference --> PredT
+    Inference --> PredC
+    PredT -- "P(T)" --> Calc
+    PredC -- "P(C)" --> Calc
     
-    H -- Uplift > Threshold --> I[Target with Ad]
-    H -- Uplift <= Threshold --> J[Silence (Suppress Ad)]
+    Calc -- "Uplift > 0" --> ActionI
+    Calc -- "Uplift &le; 0" --> ActionJ
+
+    %% Style Classes
+    classDef data fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#01579b
+    classDef decision fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,color:#7f6000
+    classDef model fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#2e7d32
+    classDef request fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#7b1fa2
+    classDef process fill:#eceff1,stroke:#455a64,stroke-width:2px,color:#455a64
+    classDef target fill:#c8e6c9,stroke:#2e7d32,stroke-width:4px,color:#1b5e20,stroke-dasharray: 5 5
+    classDef avoid fill:#ffcdd2,stroke:#c62828,stroke-width:2px,color:#b71c1c
 ```
 
 ### 🧠 Methodology: The T-Learner
